@@ -1,4 +1,4 @@
-package main
+package pokeapi
 
 import (
 	"encoding/json"
@@ -46,11 +46,11 @@ type pokeLocationAreas struct {
 
 var poke_LocationArea pokeLocationAreas
 
-func commandMap(url string, ptr_config *config) error {
+func CommandMap(url string) (next string, prev string, a error) {
 	res, err := http.Get(url)
 
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	defer res.Body.Close()
@@ -58,10 +58,10 @@ func commandMap(url string, ptr_config *config) error {
 	body, err := io.ReadAll(res.Body)
 
 	if err != nil {
-		return err
+		return "", "", err
 	}
 	if err := json.Unmarshal(body, &poke_LocationArea); err != nil {
-		return err
+		return "", "", err
 	}
 
 	//print all 20 location
@@ -69,28 +69,5 @@ func commandMap(url string, ptr_config *config) error {
 		fmt.Println(location.Name)
 	}
 
-	//update next and previous
-	ptr_config.next = &poke_LocationArea.Next
-	ptr_config.previous = &poke_LocationArea.Previous
-	return nil
-}
-
-func commandMap_forward(ptr_config *config) error {
-	url := "https://pokeapi.co/api/v2/location-area/"
-
-	if ptr_config.next != nil {
-		url = *ptr_config.next
-	}
-
-	return commandMap(url, ptr_config)
-}
-
-func commandMap_backward(ptr_config *config) error {
-	url := "https://pokeapi.co/api/v2/location-area/"
-
-	if ptr_config.previous != nil {
-		url = *ptr_config.previous
-	}
-
-	return commandMap(url, ptr_config)
+	return poke_LocationArea.Next, poke_LocationArea.Previous, nil
 }
