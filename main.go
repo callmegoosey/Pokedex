@@ -14,7 +14,13 @@ func cleanInput(text string) []string {
 }
 
 func main() {
-	current_config := commands.Config{}
+
+	command_manager := commands.NewCommandManager()
+
+	//fmt.Println(command_manager.GetConfig())
+	// command_manager.SetConfig("test", "b")
+	// fmt.Println(command_manager.GetConfig())
+
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Print("Pokedex > ")
 
@@ -27,8 +33,8 @@ func main() {
 			fmt.Println("Please put in an input")
 			fmt.Println("[command] [arguments]")
 		} else {
-			if c, ok := commands.GetCommands()[cleanedInput[0]]; ok {
-				c.Callback(&current_config)
+			if c, ok := command_manager.GetCommands()[cleanedInput[0]]; ok {
+				c.Callback(command_manager.GetConfig())
 			} else {
 				fmt.Printf("Unknown command: %s \n", cleanedInput[0])
 			}

@@ -1,13 +1,11 @@
 package pokeapi
 
 import (
-	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 )
 
-type pokeLocationAreas struct {
+type PokeLocationAreas struct {
 	Count    int    `json:"count"`
 	Next     string `json:"next"`
 	Previous string `json:"previous"`
@@ -44,13 +42,13 @@ type pokeLocationAreas struct {
 // 	} `json:"areas"`
 // }
 
-var poke_LocationArea pokeLocationAreas
+//var poke_LocationArea PokeLocationAreas
 
-func CommandMap(url string) (next string, prev string, a error) {
+func CommandMap(url string) (array_of_bytes []byte, a error) {
 	res, err := http.Get(url)
 
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	defer res.Body.Close()
@@ -58,16 +56,18 @@ func CommandMap(url string) (next string, prev string, a error) {
 	body, err := io.ReadAll(res.Body)
 
 	if err != nil {
-		return "", "", err
-	}
-	if err := json.Unmarshal(body, &poke_LocationArea); err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	//print all 20 location
-	for _, location := range poke_LocationArea.Results {
-		fmt.Println(location.Name)
-	}
+	// if err := json.Unmarshal(body, &poke_LocationArea); err != nil {
+	// 	return nil, err
+	// }
 
-	return poke_LocationArea.Next, poke_LocationArea.Previous, nil
+	// //print all 20 location
+	// for _, location := range poke_LocationArea.Results {
+	// 	fmt.Println(location.Name)
+	// }
+
+	// return poke_LocationArea.Next, poke_LocationArea.Previous, nil
+	return body, nil
 }
