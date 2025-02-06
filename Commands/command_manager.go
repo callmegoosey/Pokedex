@@ -14,7 +14,7 @@ type config struct {
 type CliCommand struct {
 	name        string
 	description string
-	Callback    func(*config) error
+	Callback    func(*config, *[]string) error
 }
 
 type commandManager struct {
@@ -59,6 +59,11 @@ func (c *commandManager) GetCommands() map[string]CliCommand {
 			name:        "mapb",
 			description: "Prints the previous 20 locations",
 			Callback:    c.commandMap_backward,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Explores a map and print all pokemon in the map",
+			Callback:    c.commandMap_explore,
 		},
 	}
 }
