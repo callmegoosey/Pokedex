@@ -3,6 +3,7 @@ package commands
 import (
 	"time"
 
+	pokeapi "github.com/callmegoosey/Pokedex/Internal/Pokeapi"
 	pokecache "github.com/callmegoosey/Pokedex/Internal/Pokecache"
 )
 
@@ -18,14 +19,16 @@ type CliCommand struct {
 }
 
 type commandManager struct {
-	config config
-	cache  pokecache.Cache
+	config  config
+	cache   pokecache.Cache
+	pokedex map[string]pokeapi.PokedexData
 }
 
 func NewCommandManager() commandManager {
 	return commandManager{
-		config: config{},
-		cache:  pokecache.NewCache(30 * time.Second),
+		config:  config{},
+		cache:   pokecache.NewCache(30 * time.Second),
+		pokedex: make(map[string]pokeapi.PokedexData),
 	}
 }
 
@@ -64,6 +67,11 @@ func (c *commandManager) GetCommands() map[string]CliCommand {
 			name:        "explore",
 			description: "Explores a map and print all pokemon in the map",
 			Callback:    c.commandMap_explore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "catches a pokemon",
+			Callback:    c.commandMap_catch,
 		},
 	}
 }

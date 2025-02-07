@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 
 	pokeapi "github.com/callmegoosey/Pokedex/Internal/Pokeapi"
@@ -22,6 +23,11 @@ func (c *commandManager) get(url string) (body []byte, err error) {
 		if err != nil {
 			return nil, err
 		}
+
+		if string(return_result) == "Not Found" {
+			return nil, errors.New("not found")
+		}
+
 		cached_body = return_result
 		c.cache.Add(url, cached_body)
 		fmt.Println("==========================")
@@ -33,7 +39,7 @@ func (c *commandManager) get(url string) (body []byte, err error) {
 		fmt.Println("used cache")
 		fmt.Println("==========================")
 	}
-
+	//fmt.Printf("%s\n", cached_body)
 	return cached_body, nil
 }
 

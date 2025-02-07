@@ -35,7 +35,10 @@ func main() {
 		} else {
 			if c, ok := command_manager.GetCommands()[cleanedInput[0]]; ok {
 				a := cleanedInput[1:]
-				c.Callback(command_manager.GetConfig(), &a)
+				err := c.Callback(command_manager.GetConfig(), &a)
+				if err != nil {
+					fmt.Println(err)
+				}
 			} else {
 				fmt.Printf("Unknown command: %s \n", cleanedInput[0])
 			}

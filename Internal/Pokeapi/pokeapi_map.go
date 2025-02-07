@@ -70,8 +70,6 @@ type PokeLocation struct {
 	} `json:"pokemon_encounters"`
 }
 
-//var poke_LocationArea PokeLocationAreas
-
 // submits a http request and gets the body
 func Get(url string) (array_of_bytes []byte, a error) {
 	res, err := http.Get(url)
@@ -88,16 +86,6 @@ func Get(url string) (array_of_bytes []byte, a error) {
 		return nil, err
 	}
 
-	// if err := json.Unmarshal(body, &poke_LocationArea); err != nil {
-	// 	return nil, err
-	// }
-
-	// //print all 20 location
-	// for _, location := range poke_LocationArea.Results {
-	// 	fmt.Println(location.Name)
-	// }
-
-	// return poke_LocationArea.Next, poke_LocationArea.Previous, nil
 	return body, nil
 }
 
