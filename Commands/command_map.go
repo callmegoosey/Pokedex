@@ -1,102 +1,94 @@
 package commands
 
 import (
-	"encoding/json"
 	"fmt"
 
 	pokeapi "github.com/callmegoosey/Pokedex/Internal/Pokeapi"
 )
 
-func (c *commandManager) commandMap_forward(ptr_config *config, other_inputs *[]string) error {
-	url := "https://pokeapi.co/api/v2/location-area/"
+// ===========================================
+//
+//	Check the pokecache
+//	if exist, reuse
+//	else creates a new cache
+//
+// ===========================================
 
-	if ptr_config.next != nil {
-		url = *ptr_config.next
-	}
+func (c *commandManager) get(url string) (body []byte, err error) {
+	cached_body, success := c.cache.Get(url)
 
-	result, success := c.cache.Get(url)
-
-	if success {
-		fmt.Println("==========================")
-		fmt.Println("used cache")
-		fmt.Println("==========================")
-	} else {
+	if !success {
 		return_result, err := pokeapi.Get(url)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		result = return_result
+		cached_body = return_result
+		c.cache.Add(url, cached_body)
 		fmt.Println("==========================")
 		fmt.Println("created cache")
 		fmt.Println("==========================")
+	} else {
+
+		fmt.Println("==========================")
+		fmt.Println("used cache")
+		fmt.Println("==========================")
 	}
 
-	poke_location_areas := pokeapi.PokeLocationAreas{}
+	return cached_body, nil
+}
 
-	if err := json.Unmarshal(result, &poke_location_areas); err != nil {
+// ===========================================
+//
+//	Base code for commandMap to reduce duplicate code
+//
+// ===========================================
+func (c *commandManager) commandMap_base(forward bool, ptr_config *config) error {
+	url := "https://pokeapi.co/api/v2/location-area/"
+
+	if forward {
+		if ptr_config.next != nil {
+			url = *ptr_config.next
+		}
+	} else {
+		if ptr_config.previous != nil {
+			url = *ptr_config.previous
+		}
+	}
+
+	cached_body, err := c.get(url)
+
+	if err != nil {
 		return err
 	}
 
-	if !success {
-		c.cache.Add(url, result)
+	next, prev, err := pokeapi.Get_map_names(&cached_body)
+
+	if err != nil {
+		return err
 	}
 
-	ptr_config.next = &poke_location_areas.Next
-	ptr_config.previous = &poke_location_areas.Previous
-
-	//print all 20 location
-	for _, location := range poke_location_areas.Results {
-		fmt.Println(location.Name)
-	}
+	ptr_config.next = &next
+	ptr_config.previous = &prev
 
 	return nil
 }
 
+// ===========================================
+//
+//	Returns next 20 map name
+//
+// ===========================================
+func (c *commandManager) commandMap_forward(ptr_config *config, other_inputs *[]string) error {
+	return c.commandMap_base(true, ptr_config)
+}
+
+// ===========================================
+//
+//	Returns previous 20 map name
+//
+// ===========================================
 func (c *commandManager) commandMap_backward(ptr_config *config, other_inputs *[]string) error {
-	url := "https://pokeapi.co/api/v2/location-area/"
-
-	if ptr_config.previous != nil {
-		url = *ptr_config.previous
-	}
-
-	result, success := c.cache.Get(url)
-
-	if !success {
-		return_result, err := pokeapi.Get(url)
-		if err != nil {
-			return err
-		}
-		result = return_result
-	}
-	// 	fmt.Println("==========================")
-	// 	fmt.Println("created cache")
-	// 	fmt.Println("==========================")
-	// } else {
-
-	// 	fmt.Println("==========================")
-	// 	fmt.Println("used cache")
-	// 	fmt.Println("==========================")
-	// }
-
-	poke_location_areas := pokeapi.PokeLocationAreas{}
-
-	if err := json.Unmarshal(result, &poke_location_areas); err != nil {
-		return err
-	}
-
-	if !success {
-		c.cache.Add(url, result)
-	}
-
-	ptr_config.next = &poke_location_areas.Next
-	ptr_config.previous = &poke_location_areas.Previous
-
-	//print all 20 location
-	for _, location := range poke_location_areas.Results {
-		fmt.Println(location.Name)
-	}
-
-	return nil
+	return c.commandMap_base(false, ptr_config)
 }
 
 func (c *commandManager) commandMap_explore(ptr_config *config, other_inputs *[]string) error {
@@ -106,24 +98,11 @@ func (c *commandManager) commandMap_explore(ptr_config *config, other_inputs *[]
 
 	url := "https://pokeapi.co/api/v2/location-area/" + (*other_inputs)[0] + "/"
 
-	return_result, err := pokeapi.Get(url)
+	cached_body, err := c.get(url)
+
 	if err != nil {
 		return err
 	}
 
-	poke_location_areas := pokeapi.PokeLocation{}
-
-	if err := json.Unmarshal(return_result, &poke_location_areas); err != nil {
-		return err
-	}
-
-	//fmt.Printf("%s", return_result)
-
-	fmt.Printf("Exploring %s...\n", (*other_inputs)[0])
-	fmt.Printf("Found Pokemon:\n")
-
-	for _, pokemon := range poke_location_areas.PokemonEncounters {
-		fmt.Printf(" - %s\n", pokemon.Pokemon.Name)
-	}
-	return nil
+	return pokeapi.Explore_map(&cached_body, other_inputs)
 }

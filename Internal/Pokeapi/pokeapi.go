@@ -1,6 +1,8 @@
 package pokeapi
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -97,4 +99,47 @@ func Get(url string) (array_of_bytes []byte, a error) {
 
 	// return poke_LocationArea.Next, poke_LocationArea.Previous, nil
 	return body, nil
+}
+
+// ===========================================
+//
+//	Returns 20 map name
+//
+// ===========================================
+func Get_map_names(array_of_bytes *[]byte) (Next string, Prev string, err error) {
+	poke_location_areas := PokeLocationAreas{}
+
+	if err := json.Unmarshal(*array_of_bytes, &poke_location_areas); err != nil {
+		return "", "", err
+	}
+
+	//print all 20 location
+	for _, location := range poke_location_areas.Results {
+		fmt.Println(location.Name)
+	}
+
+	return poke_location_areas.Next, poke_location_areas.Previous, nil
+}
+
+// ===========================================
+//
+//	Given a valid map name
+//	returns all pokemon in the area
+//
+// ===========================================
+func Explore_map(array_of_bytes *[]byte, other_inputs *[]string) error {
+	poke_location_areas := PokeLocation{}
+
+	if err := json.Unmarshal(*array_of_bytes, &poke_location_areas); err != nil {
+		return err
+	}
+
+	fmt.Printf("Exploring %s...\n", (*other_inputs)[0])
+	fmt.Printf("Found Pokemon:\n")
+
+	for _, pokemon := range poke_location_areas.PokemonEncounters {
+		fmt.Printf(" - %s\n", pokemon.Pokemon.Name)
+	}
+
+	return nil
 }
