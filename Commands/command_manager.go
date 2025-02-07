@@ -64,14 +64,19 @@ func (c *commandManager) GetCommands() map[string]CliCommand {
 			Callback:    c.commandMap_backward,
 		},
 		"explore": {
-			name:        "explore",
+			name:        "explore map_name",
 			description: "Explores a map and print all pokemon in the map",
 			Callback:    c.commandMap_explore,
 		},
 		"catch": {
-			name:        "catch",
+			name:        "catch pokemon_name",
 			description: "catches a pokemon",
 			Callback:    c.commandMap_catch,
+		},
+		"pokedex": {
+			name:        "pokedex [optional: pokemon_name]",
+			description: "prints all the name of all caught. if pokemon_name is provided, prints stats of pokedex instead",
+			Callback:    c.commandMap_pokedex,
 		},
 	}
 }
